@@ -1,0 +1,39 @@
+@StudentPortal_HostAddress = https://localhost:7155
+
+### GET - Get all students
+GET {{StudentPortal_HostAddress}}/api/Students
+Accept: application/json
+
+###
+
+### POST - Add a new student
+POST {{StudentPortal_HostAddress}}/api/Students
+Content-Type: application/json
+
+{
+  "studentName": "Rahul",
+  "course": "ECE",
+  "location": "Hyderabad",
+  "email": "rahul@gmail.com",
+  "mobileNumber": "9876543211"
+}
+
+###
+
+### PUT - Update an existing student
+PUT {{StudentPortal_HostAddress}}/api/Students/1
+Content-Type: application/json
+
+{
+  "studentName": "Rahul Kumar",
+  "course": "CSE",
+  "location": "Hyderabad",
+  "email": "rahulkumar@gmail.com",
+  "mobileNumber": "9876543211"
+}
+
+###
+
+### DELETE - Delete an existing student
+DELETE {{StudentPortal_HostAddress}}/api/Students/1
+Accept: application/json
