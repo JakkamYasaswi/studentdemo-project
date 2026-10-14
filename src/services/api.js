@@ -150,10 +150,17 @@ export async function apiRequest(path, options = {}) {
         headers.set("Authorization", `Bearer ${requestToken}`);
     }
 
-    const response = await fetch(`/api${path.startsWith("/") ? path : `/${path}`}`, {
+   
+const API_BASE_URL =
+    "https://student-registration-api-yasaswi-e8ebencgfscjcecz.indiasouthcentral-01.azurewebsites.net";
+
+const response = await fetch(
+    `${API_BASE_URL}/api${path.startsWith("/") ? path : `/${path}`}`,
+    {
         ...requestOptions,
         headers
-    });
+    }
+);
 
     if (response.status === 401 && requestToken) {
         clearAuthStorage();
