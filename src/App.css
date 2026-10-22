@@ -18,13 +18,15 @@
 
 .login-card {
     width: 100%;
-    max-width: 700px;
+    max-width: 930px;
     background: #ffffff;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    grid-template-rows: 1fr auto;
 }
-
 .session-expired-message {
     position: fixed;
     z-index: 5;
@@ -336,12 +338,7 @@
     animation: auth-arrive 500ms ease-out both;
 }
 
-.login-card {
-    max-width: 930px;
-    display: grid;
-    grid-template-columns: 0.9fr 1.1fr;
-    grid-template-rows: 1fr auto;
-}
+
 
 .login-header {
     grid-column: 1;
