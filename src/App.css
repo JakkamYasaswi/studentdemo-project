@@ -163,11 +163,9 @@
 
 .login-action {
     margin-top: 40px;
-
     display: flex;
     justify-content: space-between;
     align-items: center;
-
     gap: 30px;
 }
 
@@ -386,10 +384,7 @@
     box-shadow: 0 0 0 3px rgba(86, 131, 109, 0.15);
 }
 
-.login-action {
-    display: block;
-    margin-top: 30px;
-}
+
 
 .login-action p {
     margin: 0 0 20px;
