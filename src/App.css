@@ -82,12 +82,12 @@
 }
 
 .login-header p {
-    margin-top: 18px;
-    margin-bottom: 0;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 20px;
+    max-width: 300px;
+    margin: 20px 0 0;
+    color: rgba(255, 254, 250, 0.76);
+    font-size: 15px;
+    line-height: 1.7;
 }
-
 
 /* ============================= */
 /* LOGIN BODY */
@@ -340,16 +340,6 @@
 }
 
 
-
-
-
-.login-header p {
-    max-width: 300px;
-    margin: 20px 0 0;
-    color: rgba(255, 254, 250, 0.76);
-    font-size: 15px;
-    line-height: 1.7;
-}
 
 .login-body {
     grid-column: 2;
