@@ -105,7 +105,7 @@
 /* Form field */
 
 .login-field {
-    margin-bottom: 22px;
+    margin-bottom: 23px;
 }
 
 
@@ -346,9 +346,7 @@
 
 
 
-.login-field {
-    margin-bottom: 23px;
-}
+
 
 .login-field label,
 .registration-field label {
