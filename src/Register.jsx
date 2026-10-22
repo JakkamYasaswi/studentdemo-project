@@ -42,9 +42,9 @@ function Register() {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                    email: UserName,
-                    password: Password
-})
+                        email: UserName,
+                        password: Password
+                    })
                 }
             );
 
@@ -85,10 +85,8 @@ function Register() {
             setTimeout(() => {
                 navigate("/login");
             }, 1500);
-
         } catch (error) {
             console.error("Registration error:", error);
-
             toast.error(
                 "Unable to connect to the server. Check your network or CORS settings."
             );
@@ -96,7 +94,6 @@ function Register() {
             setLoading(false);
         }
     }
-
     return (
         <div>
             <ToastContainer
@@ -104,13 +101,13 @@ function Register() {
                 autoClose={3000}
                 toastClassName="custom-toast"
             />
-
             <form onSubmit={handleSubmit} autoComplete="off">
                 <div>
                     <h1>New Student Registration</h1>
-
-                    <label>Username:</label>
+                    <label htmlFor="username">Username:</label>
                     <input
+                        id="username"
+                        name="username"
                         type="text"
                         value={UserName}
                         onChange={(event) =>
@@ -119,12 +116,12 @@ function Register() {
                         autoComplete="off"
                         required
                     />
-
                     <br />
                     <br />
-
-                    <label>Password:</label>
+                    <label htmlFor="password">Password:</label>
                     <input
+                        id="password"
+                        name="password"
                         type="password"
                         value={Password}
                         onChange={(event) =>
@@ -133,10 +130,8 @@ function Register() {
                         autoComplete="new-password"
                         required
                     />
-
                     <br />
                     <br />
-
                     <button type="submit" disabled={loading}>
                         {loading ? "Registering..." : "Register"}
                     </button>
@@ -155,5 +150,4 @@ function Register() {
         </div>
     );
 }
-
 export default Register;
