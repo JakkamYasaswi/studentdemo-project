@@ -172,14 +172,15 @@ function StudentsTable({ allowEdit = false, allowDelete = false }) {
             {loading && <output className="students-feedback">Loading students...</output>}
             {!loading && errorMessage && <p className="students-feedback students-error" role="alert">{errorMessage}</p>}
             {actionFeedback && (
-                {actionFeedback.type === "error" ? (
-    <p className="students-feedback students-error" role="alert">
-        {actionFeedback.message}
-    </p>
-) : (
-    <output className="students-feedback students-success">
-        {actionFeedback.message}
-    </output>
+    actionFeedback.type === "error" ? (
+        <p className="students-feedback students-error" role="alert">
+            {actionFeedback.message}
+        </p>
+    ) : (
+        <output className="students-feedback students-success">
+            {actionFeedback.message}
+        </output>
+    )
 )}
             )}
             {!loading && !errorMessage && filteredStudents.length === 0 && (
