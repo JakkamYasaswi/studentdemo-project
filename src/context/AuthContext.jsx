@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     apiRequest,
@@ -94,7 +94,7 @@ export function AuthProvider({ children }) {
         return () => window.clearTimeout(expirationTimer);
     }, [auth?.token, navigate]);
 
-    async function login(email, password) {
+    const login = useCallback(async (email, password) => {
         const response = await apiRequest("/Users/login", {
             method: "POST",
             auth: false,
@@ -127,8 +127,8 @@ export function AuthProvider({ children }) {
         window.sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextAuth));
         setAuthToken(token);
         setAuth(nextAuth);
-        return nextAuth;
-    }
+return nextAuth;
+}, []);
 
     function logout() {
         clearAuthStorage();
@@ -136,14 +136,13 @@ export function AuthProvider({ children }) {
         navigate("/login", { replace: true });
     }
 
-    const value = {
-        token: auth?.token ?? null,
-        role: auth?.role ?? null,
-        user: auth?.user ?? null,
-        isAuthenticated: Boolean(auth?.token && auth?.role),
-        login,
-        logout
-    };
-
+   const value = useMemo(() => ({
+    token: auth?.token ?? null,
+    role: auth?.role ?? null,
+    user: auth?.user ?? null,
+    isAuthenticated: Boolean(auth?.token && auth?.role),
+    login,
+    logout
+}), [auth, login, logout]);
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
