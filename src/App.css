@@ -62,17 +62,14 @@
         #173b2e;
     color: #fffefa;
 }
-
-
 .portal-title {
-    font-size: 14px;
+    width: fit-content;
+    margin: 0 0 48px;
+    color: #e5bd77;
+    font-size: 11px;
     font-weight: 800;
-    letter-spacing: 0.18em;
-    color: #ef7a71;
-    margin-bottom: 18px;
+    letter-spacing: 0.16em;
 }
-
-
 .login-header h1 {
     margin: 0;
     color: white;
@@ -342,14 +339,7 @@
 }
 
 
-.portal-title {
-    width: fit-content;
-    margin: 0 0 48px;
-    color: #e5bd77;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-}
+
 
 .login-header h1 {
     max-width: 340px;
