@@ -172,13 +172,9 @@
 
 .login-action p {
     max-width: 250px;
-
     margin: 0;
-
     color: #7a7d82;
-
     font-size: 16px;
-
     line-height: 1.5;
 }
 
@@ -382,15 +378,6 @@
     border-color: #56836d;
     background: #fff;
     box-shadow: 0 0 0 3px rgba(86, 131, 109, 0.15);
-}
-
-
-
-.login-action p {
-    margin: 0 0 20px;
-    color: #77847a;
-    font-size: 12px;
-    line-height: 1.5;
 }
 
 .login-button,
