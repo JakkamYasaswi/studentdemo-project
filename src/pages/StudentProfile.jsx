@@ -31,7 +31,7 @@ function StudentProfile() {
             }
         }
 
-        loadStudent();
+        void loadStudent();
 
         return () => {
             isActive = false;
