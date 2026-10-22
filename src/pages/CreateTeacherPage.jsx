@@ -61,6 +61,7 @@ function CreateTeacherPage() {
                         onChange={(event) => setFullName(event.target.value)}
                     />
                 </label>
+                
                 <label className="management-field">
                     Email
                     <input
@@ -72,6 +73,7 @@ function CreateTeacherPage() {
                         onChange={(event) => setEmail(event.target.value)}
                     />
                 </label>
+                
                 <label className="management-field">
                     Password
                     <input
@@ -84,6 +86,7 @@ function CreateTeacherPage() {
                         onChange={(event) => setPassword(event.target.value)}
                     />
                 </label>
+                
                 {feedback && (
                     <p className={`management-feedback ${feedback.type}`} role={feedback.type === "error" ? "alert" : "status"}>
                         {feedback.message}
