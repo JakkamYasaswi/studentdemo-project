@@ -247,7 +247,11 @@ function StudentsTable({ allowEdit = false, allowDelete = false }) {
 
             {selectedStudent && editForm && (
                 <div className="management-modal-backdrop">
-                    <section className="management-modal" role="dialog" aria-modal="true" aria-labelledby="edit-student-title">
+                    <dialog
+    className="management-modal"
+    open
+    aria-labelledby="edit-student-title"
+>
                         <div className="management-modal-heading">
                             <div>
                                 <p className="portal-eyebrow">STUDENT RECORD</p>
@@ -287,7 +291,7 @@ function StudentsTable({ allowEdit = false, allowDelete = false }) {
                                 </button>
                             </div>
                         </form>
-                    </section>
+                    </dialog>
                 </div>
             )}
         </section>
