@@ -28,8 +28,8 @@ export function decodeJwtPayload(token) {
             "="
         );
         const bytes = Uint8Array.from(atob(paddedBase64), (character) =>
-            character.charCodeAt(0)
-        );
+    character.codePointAt(0)
+);
 
         return JSON.parse(new TextDecoder().decode(bytes));
     } catch {
