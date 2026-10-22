@@ -71,14 +71,15 @@
     letter-spacing: 0.16em;
 }
 .login-header h1 {
+    max-width: 340px;
     margin: 0;
-    color: white;
-    font-size: clamp(2.8rem, 4vw, 5rem);
-    font-weight: 800;
-    letter-spacing: -1px;
-    line-height: 1.05;
+    color: #fffefa;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(42px, 5vw, 58px);
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.04;
 }
-
 
 .login-header p {
     margin-top: 18px;
@@ -341,16 +342,6 @@
 
 
 
-.login-header h1 {
-    max-width: 340px;
-    margin: 0;
-    color: #fffefa;
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(42px, 5vw, 58px);
-    font-weight: 400;
-    letter-spacing: 0;
-    line-height: 1.04;
-}
 
 .login-header p {
     max-width: 300px;
