@@ -71,7 +71,7 @@ function StudentsTable({ allowEdit = false, allowDelete = false }) {
             }
         }
 
-        loadStudents();
+        void loadStudents();
 
         return () => {
             isActive = false;
