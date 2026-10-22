@@ -52,40 +52,40 @@ function CreateTeacherPage() {
 
             <form className="management-form" onSubmit={handleSubmit}>
                 <label className="management-field">
-                    Full name
-                    <input
-                        autoComplete="name"
-                        name="fullName"
-                        required
-                        value={fullName}
-                        onChange={(event) => setFullName(event.target.value)}
-                    />
-                </label>
-                
-                <label className="management-field">
-                    Email
-                    <input
-                        autoComplete="email"
-                        name="email"
-                        required
-                        type="email"
-                        value={email}
-                        onChange={(event) => setEmail(event.target.value)}
-                    />
-                </label>
-                
-                <label className="management-field">
-                    Password
-                    <input
-                        autoComplete="new-password"
-                        minLength={8}
-                        name="password"
-                        required
-                        type="password"
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                    />
-                </label>
+    <span>Full name</span>
+    <input
+        autoComplete="name"
+        name="fullName"
+        required
+        value={fullName}
+        onChange={(event) => setFullName(event.target.value)}
+    />
+</label>
+
+<label className="management-field">
+    <span>Email</span>
+    <input
+        autoComplete="email"
+        name="email"
+        required
+        type="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+    />
+</label>
+
+<label className="management-field">
+    <span>Password</span>
+    <input
+        autoComplete="new-password"
+        minLength={8}
+        name="password"
+        required
+        type="password"
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+    />
+</label>
                 
                 {feedback && (
                     <p className={`management-feedback ${feedback.type}`} role={feedback.type === "error" ? "alert" : "status"}>
