@@ -34,8 +34,8 @@ function Register() {
         setLoading(true);
 
         try {
-            const response = await fetch(
-                "https://student-registration-api-yasaswi-e8ebencgfscjcecz.indiasouthcentral-01.azurewebsites.net/api/Users/register",
+            const response = await fetch(           
+    `${import.meta.env.VITE_API_BASE_URL}/api/Users/register`,
                 {
                     method: "POST",
                     headers: {
@@ -104,32 +104,38 @@ function Register() {
             <form onSubmit={handleSubmit} autoComplete="off">
                 <div>
                     <h1>New Student Registration</h1>
-                    <label htmlFor="username">Username:</label>
-                    <input
-                        id="username"
-                        name="username"
-                        type="text"
-                        value={UserName}
-                        onChange={(event) =>
-                            setUserName(event.target.value)
-                        }
-                        autoComplete="off"
-                        required
-                    />
+
+                    
+<label htmlFor="username">Username:</label>
+<input
+    id="username"
+    type="text"
+    value={UserName}
+    onChange={(event) =>
+        setUserName(event.target.value)
+    }
+    autoComplete="off"
+    required
+/>
+
+
                     <br />
                     <br />
-                    <label htmlFor="password">Password:</label>
-                    <input
-                        id="password"
-                        name="password"
-                        type="password"
-                        value={Password}
-                        onChange={(event) =>
-                            setPassword(event.target.value)
-                        }
-                        autoComplete="new-password"
-                        required
-                    />
+
+                   
+<label htmlFor="password">Password:</label>
+<input
+    id="password"
+    type="password"
+    value={Password}
+    onChange={(event) =>
+        setPassword(event.target.value)
+    }
+    autoComplete="new-password"
+    required
+/>
+
+
                     <br />
                     <br />
                     <button type="submit" disabled={loading}>
