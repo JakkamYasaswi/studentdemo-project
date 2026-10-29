@@ -1,5 +1,12 @@
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+} from "vitest";
 import {
   render,
   screen,
@@ -44,29 +51,42 @@ describe("StudentForm", () => {
   });
 
   function fillForm() {
-    fireEvent.change(screen.getByLabelText("Student name"), {
-      target: { value: "Jakka" },
+    const fields = [
+      ["Student name", "Jakka"],
+      ["Course", "CSE"],
+      ["Location", "Guntur"],
+      ["Email address", "jakka@example.com"],
+      ["Mobile number", "9876543210"],
+      ["Create password", "password123"],
+    ];
+
+    fields.forEach(([label, value]) => {
+      fireEvent.change(screen.getByLabelText(label), {
+        target: { value },
+      });
+    });
+  }
+
+  function submitForm() {
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Create student profile",
+      })
+    );
+  }
+
+  function expectValidationError(label, value, message) {
+    render(<StudentForm />);
+    fillForm();
+
+    fireEvent.change(screen.getByLabelText(label), {
+      target: { value },
     });
 
-    fireEvent.change(screen.getByLabelText("Course"), {
-      target: { value: "CSE" },
-    });
+    submitForm();
 
-    fireEvent.change(screen.getByLabelText("Location"), {
-      target: { value: "Guntur" },
-    });
-
-    fireEvent.change(screen.getByLabelText("Email address"), {
-      target: { value: "jakka@example.com" },
-    });
-
-    fireEvent.change(screen.getByLabelText("Mobile number"), {
-      target: { value: "9876543210" },
-    });
-
-    fireEvent.change(screen.getByLabelText("Create password"), {
-      target: { value: "password123" },
-    });
+    expect(toast.error).toHaveBeenCalledWith(message);
+    expect(apiRequest).not.toHaveBeenCalled();
   }
 
   function successfulResponse() {
@@ -86,17 +106,17 @@ describe("StudentForm", () => {
     expect(screen.getByLabelText("Email address")).toBeTruthy();
     expect(screen.getByLabelText("Mobile number")).toBeTruthy();
     expect(screen.getByLabelText("Create password")).toBeTruthy();
+
     expect(
-      screen.getByRole("button", { name: "Create student profile" })
+      screen.getByRole("button", {
+        name: "Create student profile",
+      })
     ).toBeTruthy();
   });
 
   it("shows an error when student name is empty", () => {
     render(<StudentForm />);
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Create student profile" })
-    );
+    submitForm();
 
     expect(toast.error).toHaveBeenCalledWith(
       "Student name is required"
@@ -105,129 +125,81 @@ describe("StudentForm", () => {
   });
 
   it("shows an error when course is not selected", () => {
-    render(<StudentForm />);
-    fillForm();
-
-    fireEvent.change(screen.getByLabelText("Course"), {
-      target: { value: "" },
-    });
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Create student profile" })
-    );
-
-    expect(toast.error).toHaveBeenCalledWith(
+    expectValidationError(
+      "Course",
+      "",
       "Please select a course"
     );
-    expect(apiRequest).not.toHaveBeenCalled();
   });
 
   it("validates empty location", () => {
-    render(<StudentForm />);
-    fillForm();
-
-    fireEvent.change(screen.getByLabelText("Location"), {
-      target: { value: " " },
-    });
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Create student profile" })
-    );
-
-    expect(toast.error).toHaveBeenCalledWith(
+    expectValidationError(
+      "Location",
+      " ",
       "Location is required"
     );
-    expect(apiRequest).not.toHaveBeenCalled();
   });
 
   it("validates empty email", () => {
-    render(<StudentForm />);
-    fillForm();
-
-    fireEvent.change(screen.getByLabelText("Email address"), {
-      target: { value: " " },
-    });
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Create student profile" })
+    expectValidationError(
+      "Email address",
+      " ",
+      "Email is required"
     );
-
-    expect(toast.error).toHaveBeenCalledWith("Email is required");
-    expect(apiRequest).not.toHaveBeenCalled();
   });
 
   it("validates empty mobile number", () => {
-    render(<StudentForm />);
-    fillForm();
-
-    fireEvent.change(screen.getByLabelText("Mobile number"), {
-      target: { value: " " },
-    });
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Create student profile" })
-    );
-
-    expect(toast.error).toHaveBeenCalledWith(
+    expectValidationError(
+      "Mobile number",
+      " ",
       "Mobile number is required"
     );
-    expect(apiRequest).not.toHaveBeenCalled();
   });
 
   it("validates an empty password", () => {
-    render(<StudentForm />);
-    fillForm();
-
-    fireEvent.change(screen.getByLabelText("Create password"), {
-      target: { value: "" },
-    });
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Create student profile" })
-    );
-
-    expect(toast.error).toHaveBeenCalledWith(
+    expectValidationError(
+      "Create password",
+      "",
       "Password is required"
     );
-    expect(apiRequest).not.toHaveBeenCalled();
   });
 
   it("requires a password of at least eight characters", () => {
-    render(<StudentForm />);
-    fillForm();
-
-    fireEvent.change(screen.getByLabelText("Create password"), {
-      target: { value: "short" },
-    });
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Create student profile" })
-    );
-
-    expect(toast.error).toHaveBeenCalledWith(
+    expectValidationError(
+      "Create password",
+      "short",
       "Password must contain at least 8 characters"
     );
-    expect(apiRequest).not.toHaveBeenCalled();
   });
 
   it("clears all fields when Clear form is clicked", () => {
     render(<StudentForm />);
     fillForm();
 
-    fireEvent.click(screen.getByRole("button", { name: "Clear form" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Clear form" })
+    );
 
-    expect(screen.getByLabelText("Student name").value).toBe("");
-    expect(screen.getByLabelText("Course").value).toBe("");
-    expect(screen.getByLabelText("Location").value).toBe("");
-    expect(screen.getByLabelText("Email address").value).toBe("");
-    expect(screen.getByLabelText("Mobile number").value).toBe("");
-    expect(screen.getByLabelText("Create password").value).toBe("");
+    const fields = [
+      "Student name",
+      "Course",
+      "Location",
+      "Email address",
+      "Mobile number",
+      "Create password",
+    ];
+
+    fields.forEach((label) => {
+      expect(screen.getByLabelText(label).value).toBe("");
+    });
   });
 
   it("navigates to login when Back to login is clicked", () => {
     render(<StudentForm />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Back to login" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Back to login" })
+    );
 
     expect(mockNavigate).toHaveBeenCalledWith("/login");
   });
@@ -239,10 +211,7 @@ describe("StudentForm", () => {
 
     render(<StudentForm />);
     fillForm();
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Create student profile" })
-    );
+    submitForm();
 
     await waitFor(() => {
       expect(apiRequest).toHaveBeenCalledTimes(2);
@@ -292,13 +261,12 @@ describe("StudentForm", () => {
 
     render(<StudentForm />);
     fillForm();
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Create student profile" })
-    );
+    submitForm();
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("Email already exists");
+      expect(toast.error).toHaveBeenCalledWith(
+        "Email already exists"
+      );
     });
 
     expect(apiRequest).toHaveBeenCalledTimes(1);
@@ -314,10 +282,7 @@ describe("StudentForm", () => {
 
     render(<StudentForm />);
     fillForm();
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Create student profile" })
-    );
+    submitForm();
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(
@@ -333,10 +298,7 @@ describe("StudentForm", () => {
 
     render(<StudentForm />);
     fillForm();
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Create student profile" })
-    );
+    submitForm();
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(
