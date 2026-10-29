@@ -15,7 +15,7 @@ afterEach(() => {
 });
 
 describe("Navbar", () => {
-  const renderNavbar = (role, user = {}, logout = vi.fn(), path = "/") => {
+  function renderNavbar(role, user = {}, logout = vi.fn(), path = "/") {
     useAuth.mockReturnValue({ role, user, logout });
 
     return render(
@@ -26,61 +26,53 @@ describe("Navbar", () => {
         </Routes>
       </MemoryRouter>
     );
-  };
+  }
+
+  function expectLinks(links) {
+  links.forEach(([name, href]) => {
+    expect(
+      screen.getByRole("link", { name }).getAttribute("href")
+    ).toBe(href);
+  });
+
+  expect(screen.getAllByRole("link")).toHaveLength(links.length);
+}
 
   it("renders the portal brand and user name", () => {
     renderNavbar("Student", { name: "Jakka" });
 
-    expect(screen.getByText("STUDENT PORTAL")).toBeTruthy();
-    expect(screen.getByText("SIGNED IN AS")).toBeTruthy();
-    expect(screen.getByText("Jakka")).toBeTruthy();
-    expect(screen.getByText("Student")).toBeTruthy();
+    ["STUDENT PORTAL", "SIGNED IN AS", "Jakka", "Student"].forEach((text) => {
+      expect(screen.getByText(text)).toBeTruthy();
+    });
   });
 
-  it("shows Student navigation links", () => {
-    renderNavbar("Student", { name: "Jakka" });
-
-    expect(
-      screen.getByRole("link", { name: "Dashboard" }).getAttribute("href")
-    ).toBe("/student-dashboard");
-
-    expect(screen.getAllByRole("link")).toHaveLength(1);
-  });
-
-  it("shows Teacher navigation links", () => {
-    renderNavbar("Teacher", { name: "Ravi" });
-
-    expect(
-      screen.getByRole("link", { name: "Dashboard" }).getAttribute("href")
-    ).toBe("/teacher-dashboard");
-
-    expect(
-      screen.getByRole("link", { name: "Students" }).getAttribute("href")
-    ).toBe("/teacher-students");
-
-    expect(
-      screen.getByRole("link", { name: "Profile" }).getAttribute("href")
-    ).toBe("/teacher-profile");
-
-    expect(screen.getAllByRole("link")).toHaveLength(3);
-  });
-
-  it("shows Admin navigation links", () => {
-    renderNavbar("Admin", { name: "Admin User" });
-
-    expect(
-      screen.getByRole("link", { name: "Dashboard" }).getAttribute("href")
-    ).toBe("/admin-dashboard");
-
-    expect(
-      screen.getByRole("link", { name: "Manage Students" }).getAttribute("href")
-    ).toBe("/admin-students");
-
-    expect(
-      screen.getByRole("link", { name: "Create Teacher" }).getAttribute("href")
-    ).toBe("/admin-create-teacher");
-
-    expect(screen.getAllByRole("link")).toHaveLength(3);
+  it.each([
+    [
+      "Student",
+      { name: "Jakka" },
+      [["Dashboard", "/student-dashboard"]],
+    ],
+    [
+      "Teacher",
+      { name: "Ravi" },
+      [
+        ["Dashboard", "/teacher-dashboard"],
+        ["Students", "/teacher-students"],
+        ["Profile", "/teacher-profile"],
+      ],
+    ],
+    [
+      "Admin",
+      { name: "Admin User" },
+      [
+        ["Dashboard", "/admin-dashboard"],
+        ["Manage Students", "/admin-students"],
+        ["Create Teacher", "/admin-create-teacher"],
+      ],
+    ],
+  ])("shows the correct %s navigation links", (role, user, links) => {
+    renderNavbar(role, user);
+    expectLinks(links);
   });
 
   it("uses email when the user name is unavailable", () => {
@@ -89,15 +81,14 @@ describe("Navbar", () => {
     expect(screen.getByText("student@example.com")).toBeTruthy();
   });
 
- it("uses the role when name and email are unavailable", () => {
-  renderNavbar("Student", {});
+  it("uses the role when name and email are unavailable", () => {
+    renderNavbar("Student", {});
 
-  expect(screen.getAllByText("Student")).toHaveLength(2);
-});
+    expect(screen.getAllByText("Student")).toHaveLength(2);
+  });
 
   it("calls logout when the Log out button is clicked", () => {
     const logout = vi.fn();
-
     renderNavbar("Student", { name: "Jakka" }, logout);
 
     fireEvent.click(screen.getByRole("button", { name: "Log out" }));
