@@ -17,7 +17,7 @@ export default defineConfig({
         'src/**/*.test.{js,jsx,ts,tsx}',
         'src/**/*.spec.{js,jsx,ts,tsx}',
       ],
-      reporter: ['text', 'html'],
+      reporter: ['text', 'html', 'lcov'],
     },
   },
 
