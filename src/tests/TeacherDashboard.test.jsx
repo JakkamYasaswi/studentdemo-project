@@ -1,40 +1,23 @@
 
-import {
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
-import {
-  render,
-  screen,
-  cleanup,
-} from "@testing-library/react";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { render, screen, cleanup } from "@testing-library/react";
 import TeacherDashboard from "../TeacherDashboard";
+import PortalDashboardMock from "./PortalDashboardMock";
 
-vi.mock("../pages/PortalDashboard", () => ({
-  default: ({ title, description, links }) => (
-    <div>
-      <h1>{title}</h1>
-      <p>{description}</p>
-      {links.map((link) => (
-        <div key={link.to}>
-          <span>{link.label}</span>
-          <span>{link.description}</span>
-          <span>{link.to}</span>
-        </div>
-      ))}
-    </div>
-  ),
-}));
+vi.mock("../pages/PortalDashboard", async () => {
+  const { default: PortalDashboardMock } = await import(
+    "./PortalDashboardMock"
+  );
+
+  return { default: PortalDashboardMock };
+});
 
 afterEach(() => {
   cleanup();
 });
 
 describe("TeacherDashboard", () => {
-  it("renders the welcome title and description", () => {
+  it("renders the welcome title, description, and Students and Profile links", () => {
     render(<TeacherDashboard />);
 
     expect(
@@ -46,18 +29,10 @@ describe("TeacherDashboard", () => {
         "Your teaching workspace and authorized student resources."
       )
     ).toBeTruthy();
-  });
-
-  it("renders the Students link details", () => {
-    render(<TeacherDashboard />);
 
     expect(screen.getByText("Students")).toBeTruthy();
     expect(screen.getByText("Student information")).toBeTruthy();
     expect(screen.getByText("/teacher-students")).toBeTruthy();
-  });
-
-  it("renders the Profile link details", () => {
-    render(<TeacherDashboard />);
 
     expect(screen.getByText("Profile")).toBeTruthy();
     expect(screen.getByText("Your account details")).toBeTruthy();

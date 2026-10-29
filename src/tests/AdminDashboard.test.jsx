@@ -1,22 +1,16 @@
+
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import AdminDashboard from "../AdminDashboard";
+import PortalDashboardMock from "./PortalDashboardMock";
 
-vi.mock("../pages/PortalDashboard", () => ({
-  default: ({ title, description, links }) => (
-    <div>
-      <h1>{title}</h1>
-      <p>{description}</p>
-      {links.map((link) => (
-        <div key={link.to}>
-          <span>{link.label}</span>
-          <span>{link.description}</span>
-          <span>{link.to}</span>
-        </div>
-      ))}
-    </div>
-  ),
-}));
+vi.mock("../pages/PortalDashboard", async () => {
+  const { default: PortalDashboardMock } = await import(
+    "./PortalDashboardMock"
+  );
+
+  return { default: PortalDashboardMock };
+});
 
 afterEach(() => {
   cleanup();
