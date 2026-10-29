@@ -35,26 +35,26 @@ function renderHomeRedirect(authValue) {
 describe("HomeRedirect", () => {
   it("redirects unauthenticated users to login", () => {
     renderHomeRedirect({ isAuthenticated: false, role: "Admin" });
+
     expect(screen.getByText("Login Page")).toBeTruthy();
   });
 
-  it("redirects authenticated Admin users to the admin dashboard", () => {
-    renderHomeRedirect({ isAuthenticated: true, role: "Admin" });
-    expect(screen.getByText("Admin Dashboard")).toBeTruthy();
-  });
+  it.each([
+    ["Admin", "Admin Dashboard"],
+    ["Student", "Student Dashboard"],
+    ["Teacher", "Teacher Dashboard"],
+  ])(
+    "redirects authenticated %s users to their dashboard",
+    (role, dashboard) => {
+      renderHomeRedirect({ isAuthenticated: true, role });
 
-  it("redirects authenticated Student users to the student dashboard", () => {
-    renderHomeRedirect({ isAuthenticated: true, role: "Student" });
-    expect(screen.getByText("Student Dashboard")).toBeTruthy();
-  });
-
-  it("redirects authenticated Teacher users to the teacher dashboard", () => {
-    renderHomeRedirect({ isAuthenticated: true, role: "Teacher" });
-    expect(screen.getByText("Teacher Dashboard")).toBeTruthy();
-  });
+      expect(screen.getByText(dashboard)).toBeTruthy();
+    }
+  );
 
   it("redirects authenticated users with an unknown role to login", () => {
     renderHomeRedirect({ isAuthenticated: true, role: "Unknown" });
+
     expect(screen.getByText("Login Page")).toBeTruthy();
   });
 });

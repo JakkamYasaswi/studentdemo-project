@@ -30,6 +30,26 @@ function createToken(payload) {
   return `header.${encode(payload)}.signature`;
 }
 
+function hasApiBaseUrl() {
+  return Boolean(import.meta.env.VITE_API_BASE_URL?.trim());
+}
+
+function mockSuccessfulFetch() {
+  return vi.spyOn(globalThis, "fetch").mockResolvedValue({
+    status: 200,
+    ok: true,
+  });
+}
+
+function getApiBaseUrl() {
+  return import.meta.env.VITE_API_BASE_URL.trim().replace(/\/+$/, "");
+}
+
+function expectAuthorizationHeader(fetchSpy, expectedValue) {
+  const headers = fetchSpy.mock.calls[0][1].headers;
+  expect(headers.get("Authorization")).toBe(expectedValue);
+}
+
 describe("API service", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -46,10 +66,7 @@ describe("API service", () => {
 
   describe("decodeJwtPayload", () => {
     it("decodes a valid JWT payload", () => {
-      const token = createToken({
-        sub: "123",
-        role: "Student",
-      });
+      const token = createToken({ sub: "123", role: "Student" });
 
       expect(decodeJwtPayload(token)).toEqual({
         sub: "123",
@@ -68,9 +85,7 @@ describe("API service", () => {
     });
 
     it("returns null for an invalid JWT payload", () => {
-      expect(
-        decodeJwtPayload("header.invalid!.signature")
-      ).toBeNull();
+      expect(decodeJwtPayload("header.invalid!.signature")).toBeNull();
     });
   });
 
@@ -93,83 +108,47 @@ describe("API service", () => {
 
     it("returns false when the token has no numeric expiration", () => {
       expect(isTokenExpired(createToken({}))).toBe(false);
-      expect(
-        isTokenExpired(createToken({ exp: "later" }))
-      ).toBe(false);
+      expect(isTokenExpired(createToken({ exp: "later" }))).toBe(false);
     });
   });
 
   describe("getRoleFromAuthResponse", () => {
-    it("gets the role from the response", () => {
-      expect(
-        getRoleFromAuthResponse({ role: "student" }, {})
-      ).toBe("Student");
-    });
-
-    it("gets the role from the user object", () => {
-      expect(
-        getRoleFromAuthResponse(
-          { user: { role: "teacher" } },
-          {}
-        )
-      ).toBe("Teacher");
-    });
-
-    it("gets the role from the roles array", () => {
-      expect(
-        getRoleFromAuthResponse({ roles: ["Admin"] }, {})
-      ).toBe("Admin");
-    });
-
-    it("gets the role from JWT role claims", () => {
-      expect(
-        getRoleFromAuthResponse({}, { role: "Teacher" })
-      ).toBe("Teacher");
-    });
-
-    it("gets the role from the roles claim", () => {
-      expect(
-        getRoleFromAuthResponse({}, { roles: ["Admin"] })
-      ).toBe("Admin");
-    });
-
-    it("gets the role from the Microsoft role claim", () => {
-      expect(
-        getRoleFromAuthResponse(
-          {},
-          {
-            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role":
-              "Teacher",
-          }
-        )
-      ).toBe("Teacher");
-    });
-
-    it("gets the role from the XML SOAP role claim", () => {
-      expect(
-        getRoleFromAuthResponse(
-          {},
-          {
-            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role":
-              "Student",
-          }
-        )
-      ).toBe("Student");
-    });
-
-    it("continues checking candidates when a role is invalid", () => {
-      expect(
-        getRoleFromAuthResponse(
-          { role: 123, user: { role: "teacher" } },
-          {}
-        )
-      ).toBe("Teacher");
+    it.each([
+      ["response role", { role: "student" }, {}, "Student"],
+      ["user object role", { user: { role: "teacher" } }, {}, "Teacher"],
+      ["roles array", { roles: ["Admin"] }, {}, "Admin"],
+      ["JWT role claim", {}, { role: "Teacher" }, "Teacher"],
+      ["JWT roles claim", {}, { roles: ["Admin"] }, "Admin"],
+      [
+        "Microsoft role claim",
+        {},
+        {
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role":
+            "Teacher",
+        },
+        "Teacher",
+      ],
+      [
+        "XML SOAP role claim",
+        {},
+        {
+          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role":
+            "Student",
+        },
+        "Student",
+      ],
+      [
+        "valid candidate after an invalid role",
+        { role: 123, user: { role: "teacher" } },
+        {},
+        "Teacher",
+      ],
+    ])("gets the role from the %s", (_description, response, claims, role) => {
+      expect(getRoleFromAuthResponse(response, claims)).toBe(role);
     });
 
     it("returns null for an unsupported role", () => {
-      expect(
-        getRoleFromAuthResponse({ role: "Unknown" }, {})
-      ).toBeNull();
+      expect(getRoleFromAuthResponse({ role: "Unknown" }, {})).toBeNull();
     });
 
     it("returns null when no role is provided", () => {
@@ -184,17 +163,10 @@ describe("API service", () => {
       });
 
       setAuthToken(token);
-
-      sessionStorage.setItem(
-        "student-auth",
-        JSON.stringify({ token })
-      );
-
+      sessionStorage.setItem("student-auth", JSON.stringify({ token }));
       clearAuthStorage();
 
-      expect(
-        sessionStorage.getItem("student-auth")
-      ).toBeNull();
+      expect(sessionStorage.getItem("student-auth")).toBeNull();
     });
 
     it("sets and peeks at an authentication message", () => {
@@ -225,9 +197,7 @@ describe("API service", () => {
 
   describe("apiRequest", () => {
     it("throws an error when the API URL is not configured", async () => {
-      if (import.meta.env.VITE_API_BASE_URL?.trim()) {
-        return;
-      }
+      if (hasApiBaseUrl()) return;
 
       await expect(apiRequest("/Students")).rejects.toThrow(
         "API URL is not configured."
@@ -235,109 +205,55 @@ describe("API service", () => {
     });
 
     it("sends a request with the configured API URL", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) {
-        return;
-      }
+      if (!hasApiBaseUrl()) return;
 
-      const fetchSpy = vi
-        .spyOn(globalThis, "fetch")
-        .mockResolvedValue({
-          status: 200,
-          ok: true,
-        });
+      const fetchSpy = mockSuccessfulFetch();
 
       await apiRequest("/Students", { auth: false });
 
-      const baseUrl = import.meta.env.VITE_API_BASE_URL
-        .trim()
-        .replace(/\/+$/, "");
-
       expect(fetchSpy).toHaveBeenCalledWith(
-        `${baseUrl}/api/Students`,
+        `${getApiBaseUrl()}/api/Students`,
         expect.objectContaining({
           headers: expect.any(Headers),
         })
       );
     });
 
-    it("normalizes a path without a leading slash", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) {
-        return;
-      }
+    it.each([
+      ["normalizes a path without a leading slash", "Students", "/api/Students"],
+      ["does not duplicate the api prefix", "/api/Students", "/api/Students"],
+    ])("%s", async (_description, path, expectedPath) => {
+      if (!hasApiBaseUrl()) return;
 
-      const fetchSpy = vi
-        .spyOn(globalThis, "fetch")
-        .mockResolvedValue({ status: 200, ok: true });
+      const fetchSpy = mockSuccessfulFetch();
 
-      await apiRequest("Students", { auth: false });
-
-      const baseUrl = import.meta.env.VITE_API_BASE_URL
-        .trim()
-        .replace(/\/+$/, "");
+      await apiRequest(path, { auth: false });
 
       expect(fetchSpy).toHaveBeenCalledWith(
-        `${baseUrl}/api/Students`,
-        expect.any(Object)
-      );
-    });
-
-    it("does not duplicate the api prefix", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) {
-        return;
-      }
-
-      const fetchSpy = vi
-        .spyOn(globalThis, "fetch")
-        .mockResolvedValue({ status: 200, ok: true });
-
-      await apiRequest("/api/Students", { auth: false });
-
-      const baseUrl = import.meta.env.VITE_API_BASE_URL
-        .trim()
-        .replace(/\/+$/, "");
-
-      expect(fetchSpy).toHaveBeenCalledWith(
-        `${baseUrl}/api/Students`,
+        `${getApiBaseUrl()}${expectedPath}`,
         expect.any(Object)
       );
     });
 
     it("adds JSON content type when a request has a body", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) {
-        return;
-      }
+      if (!hasApiBaseUrl()) return;
 
-      const fetchSpy = vi
-        .spyOn(globalThis, "fetch")
-        .mockResolvedValue({
-          status: 200,
-          ok: true,
-        });
+      const fetchSpy = mockSuccessfulFetch();
 
       await apiRequest("/Users/login", {
         method: "POST",
         auth: false,
-        body: JSON.stringify({
-          email: "test@example.com",
-        }),
+        body: JSON.stringify({ email: "test@example.com" }),
       });
 
       const headers = fetchSpy.mock.calls[0][1].headers;
-
       expect(headers.get("Content-Type")).toBe("application/json");
     });
 
     it("preserves a supplied content type", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) {
-        return;
-      }
+      if (!hasApiBaseUrl()) return;
 
-      const fetchSpy = vi
-        .spyOn(globalThis, "fetch")
-        .mockResolvedValue({
-          status: 200,
-          ok: true,
-        });
+      const fetchSpy = mockSuccessfulFetch();
 
       await apiRequest("/Students", {
         auth: false,
@@ -346,18 +262,13 @@ describe("API service", () => {
       });
 
       const headers = fetchSpy.mock.calls[0][1].headers;
-
       expect(headers.get("Content-Type")).toBe("text/plain");
     });
 
     it("preserves supplied headers", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) {
-        return;
-      }
+      if (!hasApiBaseUrl()) return;
 
-      const fetchSpy = vi
-        .spyOn(globalThis, "fetch")
-        .mockResolvedValue({ status: 200, ok: true });
+      const fetchSpy = mockSuccessfulFetch();
 
       await apiRequest("/Students", {
         auth: false,
@@ -365,174 +276,110 @@ describe("API service", () => {
       });
 
       const headers = fetchSpy.mock.calls[0][1].headers;
-
       expect(headers.get("X-Test")).toBe("test-value");
     });
 
     it("adds a bearer token when authentication is enabled", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) {
-        return;
-      }
+      if (!hasApiBaseUrl()) return;
 
       const token = createToken({
         exp: Math.floor(Date.now() / 1000) + 3600,
       });
 
       setAuthToken(token);
-
-      const fetchSpy = vi
-        .spyOn(globalThis, "fetch")
-        .mockResolvedValue({
-          status: 200,
-          ok: true,
-        });
+      const fetchSpy = mockSuccessfulFetch();
 
       await apiRequest("/Students");
 
-      const headers = fetchSpy.mock.calls[0][1].headers;
-
-      expect(headers.get("Authorization")).toBe(`Bearer ${token}`);
+      expectAuthorizationHeader(fetchSpy, `Bearer ${token}`);
     });
 
     it("does not add authorization when authentication is disabled", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) {
-        return;
-      }
+      if (!hasApiBaseUrl()) return;
 
       setAuthToken(
-        createToken({
-          exp: Math.floor(Date.now() / 1000) + 3600,
-        })
+        createToken({ exp: Math.floor(Date.now() / 1000) + 3600 })
       );
 
-      const fetchSpy = vi
-        .spyOn(globalThis, "fetch")
-        .mockResolvedValue({ status: 200, ok: true });
+      const fetchSpy = mockSuccessfulFetch();
 
       await apiRequest("/Students", { auth: false });
 
-      const headers = fetchSpy.mock.calls[0][1].headers;
-
-      expect(headers.has("Authorization")).toBe(false);
+      expectAuthorizationHeader(fetchSpy, null);
     });
 
-    it("returns the response from fetch", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) {
-        return;
-      }
+    it.each([
+      ["returns the response from fetch", 200, true],
+      ["returns a 403 response", 403, false],
+    ])("%s", async (_description, status, ok) => {
+      if (!hasApiBaseUrl()) return;
 
-      const response = {
-        status: 200,
-        ok: true,
-      };
-
+      const response = { status, ok };
       vi.spyOn(globalThis, "fetch").mockResolvedValue(response);
 
       await expect(
         apiRequest("/Students", { auth: false })
       ).resolves.toBe(response);
     });
-
-    it("returns a 403 response", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) {
-        return;
-      }
-
-      const response = {
-        status: 403,
-        ok: false,
-      };
-
-      vi.spyOn(globalThis, "fetch").mockResolvedValue(response);
-
-      await expect(
-        apiRequest("/Students", { auth: false })
-      ).resolves.toBe(response);
-    });
-
-    // Additional authentication tests
 
     it("uses a valid token stored in sessionStorage", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) return;
+      if (!hasApiBaseUrl()) return;
 
       const token = createToken({
         exp: Math.floor(Date.now() / 1000) + 3600,
       });
 
-      sessionStorage.setItem(
-        "student-auth",
-        JSON.stringify({ token })
-      );
+      sessionStorage.setItem("student-auth", JSON.stringify({ token }));
       setAuthToken(null);
 
-      const fetchSpy = vi
-        .spyOn(globalThis, "fetch")
-        .mockResolvedValue({ status: 200, ok: true });
+      const fetchSpy = mockSuccessfulFetch();
 
       await apiRequest("/Students");
 
-      const headers = fetchSpy.mock.calls[0][1].headers;
-
-      expect(headers.get("Authorization")).toBe(`Bearer ${token}`);
+      expectAuthorizationHeader(fetchSpy, `Bearer ${token}`);
     });
 
     it("clears malformed authentication data", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) return;
+      if (!hasApiBaseUrl()) return;
 
       sessionStorage.setItem("student-auth", "{invalid-json");
       setAuthToken(null);
 
-      const fetchSpy = vi
-        .spyOn(globalThis, "fetch")
-        .mockResolvedValue({ status: 200, ok: true });
+      const fetchSpy = mockSuccessfulFetch();
 
       await apiRequest("/Students");
 
       expect(sessionStorage.getItem("student-auth")).toBeNull();
-
-      expect(
-        fetchSpy.mock.calls[0][1].headers.get("Authorization")
-      ).toBeNull();
+      expectAuthorizationHeader(fetchSpy, null);
     });
 
     it("clears an expired token stored in sessionStorage", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) return;
+      if (!hasApiBaseUrl()) return;
 
       const token = createToken({
         exp: Math.floor(Date.now() / 1000) - 3600,
       });
 
-      sessionStorage.setItem(
-        "student-auth",
-        JSON.stringify({ token })
-      );
+      sessionStorage.setItem("student-auth", JSON.stringify({ token }));
       setAuthToken(null);
-
-      vi.spyOn(globalThis, "fetch").mockResolvedValue({
-        status: 200,
-        ok: true,
-      });
+      mockSuccessfulFetch();
 
       await apiRequest("/Students");
 
       expect(sessionStorage.getItem("student-auth")).toBeNull();
-
       expect(peekAuthMessage()).toBe(
         "Your session has expired. Please login again."
       );
     });
 
     it("clears authentication after a 401 response", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) return;
+      if (!hasApiBaseUrl()) return;
 
       const token = createToken({
         exp: Math.floor(Date.now() / 1000) + 3600,
       });
 
-      sessionStorage.setItem(
-        "student-auth",
-        JSON.stringify({ token })
-      );
+      sessionStorage.setItem("student-auth", JSON.stringify({ token }));
       setAuthToken(token);
 
       vi.spyOn(globalThis, "fetch").mockResolvedValue({
@@ -543,23 +390,19 @@ describe("API service", () => {
       await apiRequest("/Students");
 
       expect(sessionStorage.getItem("student-auth")).toBeNull();
-
       expect(peekAuthMessage()).toBe(
         "Your session has expired. Please login again."
       );
     });
 
     it("does not clear authentication for a 401 response when auth is disabled", async () => {
-      if (!import.meta.env.VITE_API_BASE_URL?.trim()) return;
+      if (!hasApiBaseUrl()) return;
 
       const token = createToken({
         exp: Math.floor(Date.now() / 1000) + 3600,
       });
 
-      sessionStorage.setItem(
-        "student-auth",
-        JSON.stringify({ token })
-      );
+      sessionStorage.setItem("student-auth", JSON.stringify({ token }));
       setAuthToken(token);
 
       vi.spyOn(globalThis, "fetch").mockResolvedValue({
@@ -572,7 +415,6 @@ describe("API service", () => {
       expect(sessionStorage.getItem("student-auth")).toBe(
         JSON.stringify({ token })
       );
-
       expect(peekAuthMessage()).toBeNull();
     });
   });

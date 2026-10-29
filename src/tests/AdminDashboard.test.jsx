@@ -1,16 +1,5 @@
-
-import {
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
-import {
-  render,
-  screen,
-  cleanup,
-} from "@testing-library/react";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { render, screen, cleanup } from "@testing-library/react";
 import AdminDashboard from "../AdminDashboard";
 
 vi.mock("../pages/PortalDashboard", () => ({
@@ -34,7 +23,7 @@ afterEach(() => {
 });
 
 describe("AdminDashboard", () => {
-  it("renders the welcome title and description", () => {
+  it("renders the welcome message and all admin links", () => {
     render(<AdminDashboard />);
 
     expect(
@@ -46,27 +35,15 @@ describe("AdminDashboard", () => {
         "Manage student records and create teacher accounts."
       )
     ).toBeTruthy();
-  });
-
-  it("renders the Manage students link details", () => {
-    render(<AdminDashboard />);
 
     expect(screen.getByText("Manage students")).toBeTruthy();
     expect(
       screen.getByText("View and update student records")
     ).toBeTruthy();
     expect(screen.getByText("/admin-students")).toBeTruthy();
-  });
-
-  it("renders the Create teacher link details", () => {
-    render(<AdminDashboard />);
 
     expect(screen.getByText("Create teacher")).toBeTruthy();
-    expect(
-      screen.getByText("Add a teacher account")
-    ).toBeTruthy();
-    expect(
-      screen.getByText("/admin-create-teacher")
-    ).toBeTruthy();
+    expect(screen.getByText("Add a teacher account")).toBeTruthy();
+    expect(screen.getByText("/admin-create-teacher")).toBeTruthy();
   });
 });
